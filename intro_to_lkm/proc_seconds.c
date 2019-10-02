@@ -44,7 +44,7 @@ ssize_t proc_read(struct file *file, char __user *usr_buf, size_t count, loff_t 
 
         completed = 1;
 
-        rv = sprintf(buffer, "%llu\n", get_jiffies_64() / HZ);
+        rv = sprintf(buffer, "%lu\n", jiffies / HZ);
 
         // copies the contents of buffer to userspace usr_buf
         copy_to_user(usr_buf, buffer, rv);
