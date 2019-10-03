@@ -64,10 +64,35 @@ To compile our modules, we should add our files to the list of requirements in `
 obj-m += simple.o hello.o proc_jiffies.o proc_seconds.o
 ```
 
-The code for the `proc_seconds` module is similar, except for the following line
+The code for the `proc_seconds` module is similar
 
 ```c
-rv = sprintf(buffer, "%lu\n", jiffies / HZ);
+ssize_t proc_read(struct file *file, char __user *usr_buf, size_t count, loff_t *pos)
+{
+        int rv = 0;
+        char buffer[BUFFER_SIZE];
+        static int completed = 0, start_seconds_not_init = 1;
+        static unsigned long start_seconds;
+        
+        if (start_seconds_not_init) {
+                start_seconds = jiffies / HZ;
+                start_seconds_not_init = 0;
+        }
+
+        if (completed) {
+                completed = 0;
+                return 0;
+        }
+
+        completed = 1;
+
+        rv = sprintf(buffer, "%lu\n", jiffies / HZ - start_seconds);
+
+        // copies the contents of buffer to userspace usr_buf
+        copy_to_user(usr_buf, buffer, rv);
+
+        return rv;
+}
 ```
 
-Since in the kernel the complexity of floating-point arithmetic should be avoided, we use integer division here.
+We need to add two static variables to store the initial time in seconds. Since in the kernel the complexity of floating-point arithmetic should be avoided, we use integer division here.

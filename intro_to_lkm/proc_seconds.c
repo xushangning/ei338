@@ -35,7 +35,13 @@ ssize_t proc_read(struct file *file, char __user *usr_buf, size_t count, loff_t 
 {
         int rv = 0;
         char buffer[BUFFER_SIZE];
-        static int completed = 0;
+        static int completed = 0, start_seconds_not_init = 1;
+        static unsigned long start_seconds;
+        
+        if (start_seconds_not_init) {
+                start_seconds = jiffies / HZ;
+                start_seconds_not_init = 0;
+        }
 
         if (completed) {
                 completed = 0;
@@ -44,7 +50,7 @@ ssize_t proc_read(struct file *file, char __user *usr_buf, size_t count, loff_t 
 
         completed = 1;
 
-        rv = sprintf(buffer, "%lu\n", jiffies / HZ);
+        rv = sprintf(buffer, "%lu\n", jiffies / HZ - start_seconds);
 
         // copies the contents of buffer to userspace usr_buf
         copy_to_user(usr_buf, buffer, rv);
