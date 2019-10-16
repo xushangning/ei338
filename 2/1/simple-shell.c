@@ -26,7 +26,15 @@ int main(void)
         printf("osh>");
         fflush(stdout);
 
-        fgets(buffer, MAX_LINE, stdin);
+        // exit if only EOF is read
+        if (!fgets(buffer, MAX_LINE, stdin)) {
+            if (feof(stdin))
+                break;
+            else {
+                printf("Error (%d) in reading input.\n", ferror(stdin));
+                continue;
+            }
+        }
         if (!strcmp(buffer, "exit\n"))
             break;
 
@@ -63,10 +71,16 @@ int main(void)
 
         if (n_args > 0) {
             if ((pid = fork()) == 0) {
-                execvp(args[0], args);
+                if (execvp(args[0], args) == -1) {
+                    fputs("Error in running ", stderr);
+                    perror(args[0]);
+                    return 0;
+                }
             }
             else if (pid > 0)
                 waitpid(pid, NULL, 0);
+            else
+                perror("Error in creating new process");
         }
     }
 
