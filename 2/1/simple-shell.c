@@ -1,11 +1,3 @@
-/**
- * Simple shell interface program.
- *
- * Operating System Concepts - Tenth Edition
- * Copyright John Wiley & Sons - 2018
- * Modified by Shining Xu
- */
-
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
