@@ -33,7 +33,8 @@ int main(void)
         bool prev_char_is_space = true;
 
         /**
-         * Indicates thta the line has < 80 characters, including LF.
+         * Indicates that the line has < 80 characters, including the newline
+         * character.
          */
         bool complete_line = false;
 
@@ -48,7 +49,7 @@ int main(void)
             }
             else if (*p == '\n') {
                 complete_line = true;
-                *p = '\0';  // terminate the last argument with \0
+                *p = '\0';  // remove the newline character
             }
             else if (prev_char_is_space) {
                 prev_char_is_space = false;
@@ -68,6 +69,6 @@ int main(void)
                 waitpid(pid, NULL, 0);
         }
     }
-    
+
     return 0;
 }
