@@ -64,10 +64,17 @@ int main(void)
                 args[n_args++] = p;
             }
         }
-        args[n_args] = NULL;
 
         if (!complete_line)
             while (getchar() != '\n');
+
+        bool foreground = true;
+        // remove the last "&" from the argument list.
+        if (n_args > 1 && !strcmp(args[n_args - 1], "&")) {
+            foreground = false;
+            --n_args;
+        }
+        args[n_args] = NULL;
 
         if (n_args > 0) {
             if ((pid = fork()) == 0) {
@@ -77,8 +84,10 @@ int main(void)
                     return 0;
                 }
             }
-            else if (pid > 0)
-                waitpid(pid, NULL, 0);
+            else if (pid > 0) {
+                if (foreground)
+                    waitpid(pid, NULL, 0);
+            }
             else
                 perror("Error in creating new process");
         }
