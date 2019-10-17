@@ -38,14 +38,11 @@ int main(void)
             // buffer[MAX_LINE - 2] is not overridden with either \0 or \n
             while (getchar() != '\n');
 
-        bool prev_char_is_space = true;
-
         /**
-         * Indicates that a "<" or ">" has been parsed, so that subsequent
-         * "<" and ">" will be treated as arguments.
+         * The previous character is space, "<", or ">". Indicates that the
+         * next character is the start of an argument if it is not a space.
          */
-        bool stdin_redirection_not_parsed = true,
-            stdout_redirection_not_parsed = true;
+        bool prev_char_is_space = true;
 
         /**
          * Indicates that a redirection operator is found and that we are
@@ -62,29 +59,51 @@ int main(void)
          * true for parsing the filename for "<", false for ">"
          */
         bool parsing_stdin_redirection_filename;
+        
+        /**
+         * Indicates an error in parsing the command line. The shell will stop
+         * parsing and prompt for new input.
+         */
+        bool error_in_parsing = false;
 
         int n_args = 0;
         for (char *p = buffer; *p; ++p) {
-            if (*p == ' ') {
+            if (*p == '<') {
+                // If the stdin has been redirected, then either we just parsed
+                // a "<" and is looking for a filename, or we have found and
+                // set the variable input_filename.
+                if (search_redirection_filename || input_filename) {
+                    fputs("Error: attempt to redirect stdin a second time "
+                        "with \"<\".\n", stderr);
+                    error_in_parsing = true;
+                    break;
+                }
+                else {
+                    *p = '\0';
+                    prev_char_is_space = true;
+                    search_redirection_filename = true;
+                    parsing_stdin_redirection_filename = true;
+                }
+            }
+            else if (*p == '>') {
+                // same as the case for "<"
+                if (search_redirection_filename || output_filename) {
+                    fputs("Error: attempt to redirect stdout a second time "
+                        "with \">\".\n", stderr);
+                    error_in_parsing = true;
+                }
+                else {
+                    *p = '\0';
+                    prev_char_is_space = true;
+                    search_redirection_filename = true;
+                    parsing_stdin_redirection_filename = false;
+                }
+            }
+            else if (*p == ' ') {
                 if (!prev_char_is_space) {
                     // terminate the previous argument with \0
                     prev_char_is_space = true;
                     *p = '\0';
-
-                    if (stdin_redirection_not_parsed
-                            && !strcmp(args[n_args - 1], "<")) {
-                        stdin_redirection_not_parsed = false;
-                        search_redirection_filename = true;
-                        --n_args;   // remove "<" from the argument list
-                        parsing_stdin_redirection_filename = true;
-                    }
-                    if (stdout_redirection_not_parsed
-                            && !strcmp(args[n_args - 1], ">")) {
-                        stdout_redirection_not_parsed = false;
-                        search_redirection_filename = true;
-                        --n_args;   // same as above
-                        parsing_stdin_redirection_filename = false;
-                    }
                 }
             }
             else if (*p == '\n')
@@ -102,7 +121,9 @@ int main(void)
                 else
                     args[n_args++] = p;
             }
-        }            
+        }
+        if (error_in_parsing)
+            continue;
 
         bool foreground = true;
         // remove the last "&" from the argument list.
