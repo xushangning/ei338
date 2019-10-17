@@ -12,6 +12,12 @@ int main(void)
     // command line (of 80) has max of 40 arguments
     char *args[MAX_LINE/2 + 1];
     char buffer[MAX_LINE];
+
+    /**
+     * Save the last line for the history feature.
+     */
+    char old_buffer[MAX_LINE] = "";
+
     pid_t pid;
 
     while (true) {
@@ -31,6 +37,16 @@ int main(void)
         }
         if (!strcmp(buffer, "exit\n"))
             break;
+        if (!strcmp(buffer, "!!\n")) {
+            if (old_buffer[0] == '\0') {
+                fputs("Error: No command in history.\n", stderr);
+                continue;
+            }
+            else
+                strncpy(buffer, old_buffer, MAX_LINE);
+        }
+        else
+            strncpy(old_buffer, buffer, MAX_LINE);
 
         char c = buffer[MAX_LINE - 2];
         if (!(c == '\0' || c == '\n'))
