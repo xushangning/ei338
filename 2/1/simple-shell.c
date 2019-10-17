@@ -12,10 +12,9 @@ int main(void)
     // command line (of 80) has max of 40 arguments
     char *args[MAX_LINE/2 + 1];
     char buffer[MAX_LINE];
-    bool should_run = true;
     pid_t pid;
 
-    while (should_run) {
+    while (true) {
         printf("osh>");
         fflush(stdout);
 
