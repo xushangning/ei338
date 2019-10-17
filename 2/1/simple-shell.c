@@ -18,8 +18,10 @@ int main(void)
         printf("osh>");
         fflush(stdout);
 
-        // exit if only EOF is read
+        // set to \0 to detect whether there are > MAX_LINE - 1 characters
+        buffer[MAX_LINE - 2] = '\0';
         if (!fgets(buffer, MAX_LINE, stdin)) {
+            // exit if only EOF is read
             if (feof(stdin))
                 break;
             else {
@@ -30,13 +32,13 @@ int main(void)
         if (!strcmp(buffer, "exit\n"))
             break;
 
-        bool prev_char_is_space = true;
+        char c = buffer[MAX_LINE - 2];
+        if (!(c == '\0' || c == '\n'))
+            // There are still unread characters in stdin, because
+            // buffer[MAX_LINE - 2] is not overridden with either \0 or \n
+            while (getchar() != '\n');
 
-        /**
-         * Indicates that the line has < 80 characters, including the newline
-         * character.
-         */
-        bool complete_line = false;
+        bool prev_char_is_space = true;
 
         /**
          * Indicates that a "<" or ">" has been parsed, so that subsequent
@@ -85,10 +87,8 @@ int main(void)
                     }
                 }
             }
-            else if (*p == '\n') {
-                complete_line = true;
-                *p = '\0';  // remove the newline character
-            }
+            else if (*p == '\n')
+                *p = '\0';  // ...so it won't show up in command line arguments
             else if (prev_char_is_space) {
                 prev_char_is_space = false;
 
@@ -102,10 +102,7 @@ int main(void)
                 else
                     args[n_args++] = p;
             }
-        }
-
-        if (!complete_line)
-            while (getchar() != '\n');
+        }            
 
         bool foreground = true;
         // remove the last "&" from the argument list.
