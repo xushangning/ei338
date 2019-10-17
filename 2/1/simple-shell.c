@@ -135,6 +135,11 @@ int main(void)
 
         if (n_args > 0) {
             if ((pid = fork()) == 0) {
+                if (search_redirection_filename) {
+                    fputs("Error: the last redirection operator is not "
+                        "supplied with a file name.\n", stderr);
+                    return 0;
+                }
                 if (input_filename && !freopen(input_filename, "r", stdin)) {
                     fputs("Error in opening \"", stderr);
                     fputs(input_filename, stderr);
