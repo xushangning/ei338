@@ -24,7 +24,7 @@ int main(void)
             if (feof(stdin))
                 break;
             else {
-                printf("Error (%d) in reading input.\n", ferror(stdin));
+                fprintf(stderr, "Error (%d) in reading input.\n", ferror(stdin));
                 continue;
             }
         }
