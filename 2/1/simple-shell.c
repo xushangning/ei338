@@ -39,7 +39,7 @@ int main(void)
             break;
         if (!strcmp(buffer, "!!\n")) {
             if (old_buffer[0] == '\0') {
-                fputs("Error: No command in history.\n", stderr);
+                fputs("simple-shell: No command in history.\n", stderr);
                 continue;
             }
             else
@@ -89,7 +89,7 @@ int main(void)
                 // a "<" and is looking for a filename, or we have found and
                 // set the variable input_filename.
                 if (search_redirection_filename || input_filename) {
-                    fputs("Error: attempt to redirect stdin a second time "
+                    fputs("simple-shell: attempt to redirect stdin a second time "
                         "with \"<\".\n", stderr);
                     error_in_parsing = true;
                     break;
@@ -104,7 +104,7 @@ int main(void)
             else if (*p == '>') {
                 // same as the case for "<"
                 if (search_redirection_filename || output_filename) {
-                    fputs("Error: attempt to redirect stdout a second time "
+                    fputs("simple-shell: attempt to redirect stdout a second time "
                         "with \">\".\n", stderr);
                     error_in_parsing = true;
                 }
@@ -152,7 +152,7 @@ int main(void)
         if (n_args > 0) {
             if ((pid = fork()) == 0) {
                 if (search_redirection_filename) {
-                    fputs("Error: the last redirection operator is not "
+                    fputs("simple-shell: the last redirection operator is not "
                         "supplied with a file name.\n", stderr);
                     return 0;
                 }
