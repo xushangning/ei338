@@ -198,8 +198,9 @@ int main(void)
 
         if (n_args > 0) {
             if (in_pipe) {
-                // no further pipe down the road, run the command in the
-                // current process
+                // if in a pipe, run the command in the current process
+
+                // no further pipe down the road, so no more forking
                 if (output_filename || !stdout_redirected) {
                     if (output_filename && !freopen(output_filename, "w", stdout)) {
                         fputs("Error in opening \"", stderr);
@@ -214,11 +215,44 @@ int main(void)
                         return 0;
                     }
                 }
+                // Otherwise, there is another pipe down the road.
+                int pipefd[2];
+                if (pipe(pipefd) == -1) {
+                    perror("simple-shell: fail to create the pipe");
+                    return 0;
+                }
+                // fork a child before running the command
+                if ((pid = fork()) == 0) {
+                    close(pipefd[1]);
+                    dup2(pipefd[0], STDIN_FILENO);
+
+                    args += n_args + 1;
+                    buffer = p + 1;
+
+                    in_pipe = true;
+                    stdin_redirected = true;
+                    continue;
+                }
+                else if (pid > 0) {
+                    close(pipefd[0]);
+                    dup2(pipefd[1], STDOUT_FILENO);
+
+                    if (execvp(args[0], args) == -1) {
+                        fputs("Error in running ", stderr);
+                        perror(args[0]);
+                        return 0;
+                    }
+                }
+                else {
+                    perror("simple-shell: fail to create a subshell for the pipe");
+                    return 0;
+                }
             }
 
             if ((pid = fork()) == 0) {
+                // Need to pipe the output, but we are not in a pipe, so we
+                // have to fork a second time for commands in the pipe.
                 if (!output_filename && stdout_redirected) {
-                    // need to pipe the output
                     int pipefd[2];
                     if (pipe(pipefd) == -1) {
                         perror("simple-shell: fail to create the pipe");
