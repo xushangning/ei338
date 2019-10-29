@@ -17,14 +17,20 @@ class Main {
   }
 
   public static void main(String args[]) {
-    var a = new Integer [2000];
+    var a = new Integer [1000];
     var random = new Random();
+    var fjp = new ForkJoinPool();
+
     for (int i = 0; i < a.length; ++i)
         a[i] = random.nextInt();
-
-    var fjp = new ForkJoinPool();
     fjp.invoke(new QuicksortAction<>(a, 0, a.length));
-
+    for (int x : a)
+        System.out.print(x + " ");
+    System.out.println();
+    
+    for (int i = 0; i < a.length; ++i)
+        a[i] = random.nextInt();
+    fjp.invoke(new MergeSortAction<>(a, 0, a.length));
     for (int x : a)
         System.out.print(x + " ");
     System.out.println();
