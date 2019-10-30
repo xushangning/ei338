@@ -7,7 +7,7 @@ class Main {
     for (int i = begin + 1; i < end; ++i) {
       x = a[i];
       int j;
-      for (j = i - 1; j >= 0; --j)
+      for (j = i - 1; j >= begin; --j)
         if (x.compareTo(a[j]) < 0)
           a[j + 1] = a[j];
         else

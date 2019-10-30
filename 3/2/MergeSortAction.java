@@ -23,13 +23,13 @@ public class MergeSortAction<T extends Comparable<T>> extends RecursiveAction {
       Main.insertionSort(array, begin, end);
       return;
     }
-    
+
     int mid = begin + length / 2;
     invokeAll(
-      new QuicksortAction<>(array, begin, mid),
-      new QuicksortAction<>(array, mid, end)
+      new MergeSortAction<>(array, begin, mid),
+      new MergeSortAction<>(array, mid, end)
     );
-    
+
     var buffer = Arrays.copyOfRange(array, begin, mid);
     for (int i = 0, j = begin, k = mid; i < buffer.length; ++j)
       array[j] = (k == end || buffer[i].compareTo(array[k]) < 0) ? buffer[i++] : array[k++];
