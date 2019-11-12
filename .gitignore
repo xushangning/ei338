@@ -9,3 +9,5 @@ Module.symvers
 *.cmd
 
 *.class
+
+cmake-build-debug/
