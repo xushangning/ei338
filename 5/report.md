@@ -4,7 +4,7 @@
 
 ## Introduction
 
-In this project report, we implement our own thread pool in Java.
+In this project report, we implement our own thread pool in Java and present our solution to the producer-consumer problem with POSIX synchronization tools.
 
 ## Environment
 
@@ -107,3 +107,49 @@ public void run() {
   }
 }
 ```
+
+## The Producer-Consumer Problem
+
+Our design is the same as that given in the book: two semaphores for counting the number of empty and full buffers and one mutex lock for mutual exclusive access to the buffer. The buffer is implemented as a circular buffer:
+
+```c
+static int insert_item(buffer_item item)
+{
+    buffer[in] = item;
+    in = (in + 1) % BUFFER_SIZE;
+    return 0;
+}
+
+static int remove_item(buffer_item *item) {
+    *item = buffer[out];
+    out = (out + 1) % BUFFER_SIZE;
+    return 0;
+}
+```
+
+The semaphore `full` counts the number of full buffers, and `empty` the empty buffers. Each producer is assigned a numeric ID in case that IDs assigned by Pthread of type `pthread_t` may not be numeric.
+
+```c
+void *producer(void *p_id)
+{
+    int id = *(int *)p_id;
+    buffer_item item;
+    while (true) {
+        sleep(rand() % 4);
+        item = rand() % 1000;
+        sem_wait(&empty);
+        pthread_mutex_lock(&mutex);
+
+        if (insert_item(item))
+            fprintf(stderr, "report error condition");
+        else
+            printf("Producer %d produced %d.\n", id, item);
+
+        pthread_mutex_unlock(&mutex);
+        sem_post(&full);
+    }
+    return NULL;
+}
+```
+
+The `consumer` function is similar to `producer`. A compiled executable is distributed with the handin for demonstration purpose.
