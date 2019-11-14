@@ -4,7 +4,6 @@ int main(int argc, char *argv[])
 {
     struct producer_consumer_thread {
         pthread_t tid;
-        pthread_attr_t attr;
         int id;
     };
     int sleep_seconds, n_producers, n_consumers;
@@ -17,15 +16,11 @@ int main(int argc, char *argv[])
     struct producer_consumer_thread consumers[n_consumers];
     for (int i = 0; i < n_producers; ++i) {
         producers[i].id = i;
-        pthread_attr_init(&producers[i].attr);
-        pthread_create(&producers[i].tid, &producers[i].attr, producer,
-                &producers[i].id);
+        pthread_create(&producers[i].tid, NULL, producer, &producers[i].id);
     }
     for (int i = 0; i < n_consumers; ++i) {
         consumers[i].id = i;
-        pthread_attr_init(&consumers[i].attr);
-        pthread_create(&consumers[i].tid, &consumers[i].attr, consumer,
-                       &consumers[i].id);
+        pthread_create(&consumers[i].tid, NULL, consumer, &consumers[i].id);
     }
 
     sleep(sleep_seconds);
