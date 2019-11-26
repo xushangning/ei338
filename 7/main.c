@@ -33,7 +33,6 @@ int main(int argc, char *argv[]) {
         while (getchar() != '\n');
         fputs("allocator> ", stdout);
     }
-    putchar('\n');
 
     pdeque_free(d);
     return 0;
