@@ -106,9 +106,9 @@ bool request(struct pdeque *d, const char *name, int size, enum strategy st)
 
     if (successful) {
         struct pdeque_node *new = (struct pdeque_node *) malloc(sizeof(struct pdeque_node));
-        size_t length = strlen(name);
-        new->name = (char *) calloc(length, sizeof(char));
-        strncpy(new->name, name, length);
+        size_t name_size = strlen(name) + 1;
+        new->name = (char *) calloc(name_size, sizeof(char));
+        strncpy(new->name, name, name_size);
 
         if (selected) {
             new->start = selected->end;
