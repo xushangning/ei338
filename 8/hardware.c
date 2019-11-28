@@ -9,10 +9,12 @@ unsigned translate(unsigned logical_addr)
     bool not_found = true;
     struct tlb_entry *te;
 
+    ++tlb.accesses;
     for (int i = 0; i < TLB_SIZE; ++i) {
-        te = tlb + i;
+        te = tlb.table + i;
         if (te->valid && te->pn == page_number) {
             frame_number = te->fn;
+            ++tlb.hits;
             not_found = false;
             break;
         }
@@ -22,14 +24,14 @@ unsigned translate(unsigned logical_addr)
         frame_number = page_table_translate(page_number);
         not_found = true;
         for (int i = 0; i < TLB_SIZE; ++i) {
-            te = tlb + i;
+            te = tlb.table + i;
             if (!te->valid) {
                 not_found = false;
                 break;
             }
         }
         if (not_found)
-            te = tlb + rand() % TLB_SIZE;
+            te = tlb.table + rand() % TLB_SIZE;
         te->pn = page_number;
         te->fn = frame_number;
         te->valid = true;
@@ -40,17 +42,19 @@ unsigned translate(unsigned logical_addr)
 
 unsigned page_table_translate(unsigned page_number)
 {
-    struct page_table_entry *pte = page_table + page_number;
+    struct page_table_entry *pte = page_table.table + page_number;
+    ++page_table.accesses;
     if (pte->valid)
         return pte->n;
 
+    ++page_table.faults;
     // FIFO implemented with a circular array
     int insert_pos = frame_table.next_insert_pos;
     frame_table.next_insert_pos = (insert_pos + 1) % FRAME_TABLE_SIZE;
 
     uint8_t override_pn = frame_table.table[insert_pos];
     frame_table.table[insert_pos] = page_number;
-    struct page_table_entry *override = page_table + override_pn;
+    struct page_table_entry *override = page_table.table + override_pn;
 
     // The frame table is initialized to all zeroes when created, leading to
     // the illusion that all frames are allocated for page 0 in the backing
@@ -62,7 +66,7 @@ unsigned page_table_translate(unsigned page_number)
     if (override->n == (unsigned) insert_pos && override->valid) {
         // mark TLB entry as invalid
         for (int i = 0; i < TLB_SIZE; ++i) {
-            struct tlb_entry *te = tlb + i;
+            struct tlb_entry *te = tlb.table + i;
             if (te->pn == override_pn && te->valid) {
                 te->valid = false;
                 break;
@@ -71,8 +75,8 @@ unsigned page_table_translate(unsigned page_number)
     }
     // mark page table entry as invalid
     override->valid = false;
-    page_table[page_number].n = insert_pos;
-    page_table[page_number].valid = true;
+    page_table.table[page_number].n = insert_pos;
+    page_table.table[page_number].valid = true;
 
     // move data from the backing store to the main memory
     FILE *bs = fopen("BACKING_STORE.bin", "rb");

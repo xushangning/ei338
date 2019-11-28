@@ -14,6 +14,9 @@ int main() {
         assert(test == correct);
         printf("%d\n", test);
     }
+    printf("TLB Hit Rate: %lf\n", (double) tlb.hits / tlb.accesses);
+    printf("Page Fault Rate: %lf\n",
+            (double) page_table.faults / page_table.accesses);
 
     return 0;
 }

@@ -18,7 +18,10 @@ struct tlb_entry {
     bool valid: 1;
 };
 
-struct tlb_entry tlb[TLB_SIZE];
+struct {
+    struct tlb_entry table[TLB_SIZE];
+    int accesses, hits;
+} tlb;
 
 struct page_table_entry {
     unsigned n: 7;
@@ -26,14 +29,17 @@ struct page_table_entry {
 };
 
 /**
- * The page table. page_table[i] == j means that page number i translates to
- * physical address/frame number j.
+ * The page table. page_table.table[i] == j means that page number i translates
+ * to physical address/frame number j.
  */
-struct page_table_entry page_table[PAGE_TABLE_SIZE];
+struct {
+    struct page_table_entry table[PAGE_TABLE_SIZE];
+    int accesses, faults;
+} page_table;
 
 /**
- * Reverse lookup table. frame_table[i] == j means that the ith frame is mapped
- * to the jth page in the backing store.
+ * Reverse lookup table. frame_table.table[i] == j means that the ith frame is
+ * mapped to the jth page in the backing store.
  */
 struct {
     uint8_t table[FRAME_TABLE_SIZE];
