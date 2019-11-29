@@ -125,13 +125,14 @@ int request_resources(int customer_num, const int request[])
     }
 
     bool finish[NUMBER_OF_CUSTOMERS] = {false};
-    bool cant_allocate = true, can_complete = true;
+    bool cant_allocate, can_complete;
     int count = 0;
 
     for (int i = 0; count < NUMBER_OF_CUSTOMERS; i = (i + 1) % NUMBER_OF_CUSTOMERS) {
         if (finish[i])
             ++count;
         else {
+            can_complete = true;
             for (int j = 0; j < NUMBER_OF_RESOURCES; ++j)
                 if (temp_available[j] < need[i][j]) {
                     can_complete = false;

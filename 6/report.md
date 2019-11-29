@@ -30,6 +30,7 @@ for (int i = 0; count < NUMBER_OF_CUSTOMERS; i = (i + 1) % NUMBER_OF_CUSTOMERS) 
     if (finish[i])
         ++count;
     else {
+        can_complete = true;
         for (int j = 0; j < NUMBER_OF_RESOURCES; ++j)
             if (temp_available[j] < need[i][j]) {
                 can_complete = false;
